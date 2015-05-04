@@ -4,8 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model{
     
-    protected $table = 'Group';
-    protected $fillable = array('name');
+    protected $fillable = array('name', 'cretor_id');
 
     /**
         Relations

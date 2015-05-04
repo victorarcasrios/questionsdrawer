@@ -4,8 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Answer extends Model{
     
-    protected $table = 'Answer';
-    protected $fillable = ['id_question', 'id_author', 'text'];
+    protected $fillable = ['question_id', 'author_id', 'text'];
 
     public function question(){
     	return $this->belongsTo('App\Models\Question', 'id_question');

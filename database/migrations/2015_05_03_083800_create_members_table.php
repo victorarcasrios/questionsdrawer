@@ -19,7 +19,7 @@ class CreateMembersTable extends Migration {
 			$table->char('role', 8);
 			$table->char('status', 8);
 			$table->timestamps();
-			$table->primary('group_id', 'user_id');
+			$table->primary(['group_id', 'user_id']);
 			$table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade')->onUpdate('cascade');
 			$table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
 			$table->foreign('role')->references('name')->on('roles')->onDelete('restrict')->onUpdate('cascade');

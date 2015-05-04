@@ -4,8 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Question extends Model{
 
-	protected $table = 'Question';
-	protected $fillable = ['id_author', 'id_group', 'text'];
+	protected $fillable = ['group_id', 'author_id', 'text'];
 
 	/**
 		Relations
