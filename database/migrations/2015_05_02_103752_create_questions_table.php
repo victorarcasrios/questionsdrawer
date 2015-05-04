@@ -15,9 +15,9 @@ class CreateQuestionsTable extends Migration {
 		Schema::create('questions', function($table)
 		{
 			$table->increments('id');
-			$table->integer('author_id')->nullable();
-			$table->integer('best_answer_id')->nullable();
-			$table->integer('group_id');
+			$table->integer('author_id')->unsigned()->nullable();
+			$table->integer('best_answer_id')->unsigned()->nullable();
+			$table->integer('group_id')->unsigned();
 			$table->text('text');
 			$table->timestamps();
 			$table->foreign('author_id')->references('id')->on('users')->onDelete('set null')->onUpdate('cascade');

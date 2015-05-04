@@ -16,11 +16,9 @@ class CreateGroupsTable extends Migration {
 		{
 			$table->increments('id');
 			$table->string('name', 45);
-			$table->integer('creator_id');
-			$table->integer('father_id')->nullable();
+			$table->integer('creator_id')->unsigned();
 			$table->timestamps();
 			$table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
-			$table->foreign('father_id')->references('id')->on('groups')->onDelete('set null')->onUpdate('cascade');
 		});
 	}
 
@@ -34,7 +32,6 @@ class CreateGroupsTable extends Migration {
 		Schema::table('groups', function($table)
 		{
 			$table->dropForeign('groups_creator_id_foreign');
-			$table->dropForeign('groups_father_id_foreign');
 		});
 		Schema::drop('groups');
 	}

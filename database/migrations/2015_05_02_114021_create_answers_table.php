@@ -15,12 +15,17 @@ class CreateAnswersTable extends Migration {
 		Schema::create('answers', function($table)
 		{
 			$table->increments('id');
-			$table->integer('question_id');
-			$table->integer('author_id')->nullable();
+			$table->integer('question_id')->unsigned();
+			$table->integer('author_id')->unsigned()->nullable();
 			$table->text('text');
 			$table->timestamps();
 			$table->foreign('question_id')->references('id')->on('questions')->onDelete('cascade')->onUpdate('cascade');
 			$table->foreign('author_id')->references('id')->on('users')->onDelete('set null')->onUpdate('cascade');
+		});
+
+		Schema::table('questions', function($table)
+		{
+			$table->foreign('best_answer_id')->references('id')->on('answers')->onDelete('set null')->onUpdate('cascade');
 		});
 	}
 
@@ -35,6 +40,10 @@ class CreateAnswersTable extends Migration {
 		{
 			$table->dropForeign('answers_question_id_foreign');
 			$table->dropForeign('answers_author_id_foreign');
+		});
+		Schema::table('questions', function($table)
+		{
+			$table->dropForeign('questions_best_answer_id_foreign');
 		});
 		Schema::drop('answers');
 	}
