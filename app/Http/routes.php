@@ -31,7 +31,7 @@ Route::group(['prefix' => 'api'], function(){
 
             // Auth routes
             Route::post( '/check', 'UsersController@isLoggedUser');
-            Route::post( '/signup', 'UsersController@signup' );
+            Route::post( '/', 'UsersController@signup' );
             Route::post( '/signin', 'UsersController@signin' );
             Route::post( '/signout', ['middleware' => 'loggedUser', 'uses' => 'UsersController@signout'] );
 

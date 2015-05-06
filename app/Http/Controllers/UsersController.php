@@ -71,55 +71,71 @@ class UsersController extends Controller{
         
         return json_encode(array( 'success' => 1 ));
     }
+
+    /**
+        SIGNUP
+    */
     
     /**
-      If isProperSignupData returns OK creates a new user
-      @return JSON (success, [exception])
+     * If the validator returns OK creates a new user
+     * @calls getSignupValidator
+     * @return JSON (success, [exception])
      */
     public function signup(){
-        if( !$this->isProperSignupData( Input::get('name'), Input::get('email'), Input::get('password') ) )
-            return json_encode( array('success' => 0, 'exception' => 'IncorrectData') );
-        User::create( array(
-            'name' => Input::get('name'), 
-            'email' => Input::get('email'), 
-            'password' => Hash::make( Input::get('password') ) 
-        ));
-        return json_encode( array("success" => 1) );
+
+        $name = Input::get('name');
+        $email = Input::get('email');
+        $password = Input::get('password');
+        $validator = $this->getSignupValidator( $name, $email, $password );
+
+        if($validator->fails())
+            return json_encode(['status' => 0, 'exception' => 'IncorrectData', 'errors' => $validator->messages()]);
+
+        User::create([
+            'name' => $name, 
+            'email' => $email, 
+            'password' => Hash::make( $password ) 
+        ]);
+        return json_encode(["status" => env('STATUS_OK')]);
     }
 
     /**
-      Validates signup data 
-      @param String $name
-      @param String $email
-      @param String $password
-      @return 1 for OK, empty for KO
+     * Validates signup data 
+     * @calledBy signup()
+     * @param String $name
+     * @param String $email
+     * @param String $password
+     * @return 1 for OK, empty for KO
      */
-    private function isProperSignupData($name, $email, $password){
-        $validator = Validator::make(
+    private function getSignupValidator($name, $email, $password){
+        return Validator::make(
             array(
                 'name' => $name,
                 'email' => $email,
                 'password' => $password
             ),
             array(
-                'name' => 'required|min:3|max:15|unique:User',
-                'email' => 'required|email|unique:User',
+                'name' => 'required|min:3|max:15|unique:users',
+                'email' => 'required|email|unique:users',
                 'password' => 'required|min:8'
             )
         );
-        return !$validator->fails();
     }
+
+    /**
+        SIGNIN
+    */
     
     /**
-      Signin of a user
-      @return JSON (success, [id_and_token/exception])
+     * Signin of a user
+     * @return JSON (success, [id_and_token/exception])
      */
     public function signin(){
         $id_and_token = $this->getIdAndCSRFTokenOrFail( Input::get('name'), Input::get('email'), Input::get('password') );
         if( $id_and_token )
-            return json_encode( array('success' => 1, 'id_and_token' => $id_and_token) );
+            return json_encode( array('status' => env('STATUS_OK'), 'id_and_token' => $id_and_token) );
         else
-            return json_encode( array('success' => 0, 'exception' => 'IncorrectCredentials') );
+            return json_encode( array('status' => env('STATUS_KO'), 'exception' => 'IncorrectCredentials') );
     }
     
     /**
@@ -158,6 +174,6 @@ class UsersController extends Controller{
         $user = User::find(Input::get('user_id'));
         $user->remember_token = null;
         $user->save();
-        return json_encode(array("success" => 1));
+        return json_encode(array("status" => env('STATUS_OK')));
     }
 }
