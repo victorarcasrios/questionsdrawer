@@ -26,7 +26,6 @@ Route::group(['prefix' => 'api'], function(){
         Route::group(['prefix' => 'users'], function(){
             // Debugging routes
             Route::get( '/', ['as' => 'users', 'uses' => 'UsersController@listAll'] );
-            Route::get( '/{id}', 'UsersController@get');
             // END 
 
             // Auth routes
@@ -36,9 +35,13 @@ Route::group(['prefix' => 'api'], function(){
             Route::post( '/signout', ['middleware' => 'loggedUser', 'uses' => 'UsersController@signout'] );
 
             // Other routes
+            Route::group(['prefix' => '/{id}', 'middleware' => 'userExists'], function(){
+                Route::get('/', 'UsersController@get');
+                Route::get('/roles', 'UsersController@getRolesFor');
+                Route::get('/statuses', 'UsersController@getStatusesFor');
+            });
             // Route::get('/{id}/groups/created/count', 'UsersController@countOwnGroups');
             // Route::get('/{id}/groups/', 'UsersController@getRelatedGroups');
-            // Route::get('/{id}/roles', 'UsersController@getRolesFor');
             // Route::get('/{id}/{membership}/groups', 'GroupsController@getAllForMember');
         });
 

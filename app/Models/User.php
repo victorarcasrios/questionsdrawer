@@ -10,9 +10,10 @@ class User extends Model{
     	Relations
     **/
 
-    // public function roles(){
-    //     return $this->belongsToMany('App\Models\Role', 'Members', 'user_id', 'id');
-    // }
+    public function members()
+    {
+        return $this->hasMany('App\Models\Member', 'user_id');
+    }
 
     public function groups(){
         return Group::join('members', 'members.group_id', '=', 'groups.id')
@@ -21,6 +22,15 @@ class User extends Model{
 
     public function createdGroups(){
         return $this->hasMany('App\Models\Group', 'creator_id');
+    }
+
+    public function roles(){
+        return $this->members()->select(\DB::raw('DISTINCT(role)'));
+    }
+
+    public function statuses()
+    {
+        return $this->members()->select(\DB::raw('DISTINCT(status)'));
     }
 
     // public function questions(){

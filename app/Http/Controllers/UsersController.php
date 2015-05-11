@@ -24,41 +24,80 @@ class UsersController extends Controller{
         return User::find($id);
     }
 
-    public function getRelatedGroups($userId){
-        $user = User::find($userId);
-        $asMember = json_decode($user->groups);
-        $asCreator = json_decode($user->createdGroups);
-        $relatedGroups = array_merge($asMember, $asCreator);
-        return json_encode(['success' => 1, 'groups' => $relatedGroups]);
-    }
+    // public function getRelatedGroups($userId){
+    //     $user = User::find($userId);
+    //     $asMember = json_decode($user->groups);
+    //     $asCreator = json_decode($user->createdGroups);
+    //     $relatedGroups = array_merge($asMember, $asCreator);
+    //     return json_encode(['success' => 1, 'groups' => $relatedGroups]);
+    // }
 
     /**
-        Returns user roles        
-    **/
-    public function getRolesFor($id){
-        $user = User::find($id);
-        if( !$user ) return json_encode(array( 'success' => 0, 'exception' => 'UserNotFound' ));
-
-        $rolesArray = array();
-        foreach( $user->roles as $key => $role )
-            $rolesArray[$key] = array( "id" => $role->id, "role" => $role->name);
-        return json_encode(['success' => 1, 'roles' => $rolesArray]);
-    }
-
-    /**
-        Returns recount of groups created by user
-        @return JSON (int success, int count, int max_allowed)
-    **/ 
-    public function countOwnGroups($id){
-        $user = User::find($id);
-        if( !$user ) return json_encode(array( 'success' => 0, 'exception' => 'UserNotFound' ));
-
+     * Returns user roles
+     * @param integet $id of specific user
+     * @return json array [status, roles]      
+     */
+    public function getRolesFor($id)
+    {        
         return json_encode([
-            "success" => 1,
-            "count" => $user->createdGroups()->count(), 
-            "max_allowed" => intval(env("MAX_GROUPS_CREATED_BY_USER"))
+            'status' => env('STATUS_OK'), 
+            'roles' => $this->formatRoles(User::find($id)->roles)
         ]);
     }
+
+    /**
+     * Format member role Eloquent Object array into string roles array
+     * @param $roles member role Eloquent Object array
+     * @return $rolesArray string array
+     */
+    private function formatRoles($roles)
+    {
+        $rolesArray = array();
+        foreach( $roles as $key => $role )
+            $rolesArray[$key] = $role->role;
+        return $rolesArray;
+    }
+
+    /**
+     * Returns user statuses
+     * @param integer $id of specific user
+     * @return json array [status, statuses]
+     */
+    public function getStatusesFor($id)
+    {
+        return json_encode([
+            'status' => env('STATUS_OK'), 
+            'statuses' => $this->formatStatuses(User::find($id)->statuses)
+        ]);
+    }
+
+    /**
+     * Format member status Eloquent Object array into string statuses array
+     * @param $statuses member status Eloquent Object array
+     * @return $statusesArray string array
+     */
+    private function formatStatuses($statuses)
+    {
+        $statusesArray = array();
+        foreach( $statuses as $key => $status )
+            $statusesArray[$key] = $status->status;
+        return $statusesArray;   
+    }
+
+    // /**
+    //  * Returns recount of groups created by user
+    //  * @return JSON (int success, int count, int max_allowed)
+    //  */ 
+    // public function countOwnGroups($id){
+    //     $user = User::find($id);
+    //     if( !$user ) return json_encode(array( 'success' => 0, 'exception' => 'UserNotFound' ));
+
+    //     return json_encode([
+    //         "success" => 1,
+    //         "count" => $user->createdGroups()->count(), 
+    //         "max_allowed" => intval(env("MAX_GROUPS_CREATED_BY_USER"))
+    //     ]);
+    // }
     
     // /** 
     //     Checks if user is logged
@@ -173,6 +212,7 @@ class UsersController extends Controller{
     
     /**
      * Signout user (if passes auth middleware) with the given id
+     * @return json array [status]
      */
     public function signout(){
         $user = User::find(Input::get('user_id'));
