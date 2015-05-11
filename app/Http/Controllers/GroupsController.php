@@ -14,9 +14,6 @@ use App\Models\Role;
  */
 class GroupsController extends Controller{
 
-	const CREATOR = 'creator';
-	const NOT_MEMBER = 'not_member';
-
 	/**
 		Basic Retrieving data
 	**/
@@ -51,66 +48,63 @@ class GroupsController extends Controller{
 	}
 
 	/**
-		Advanced retrieving data (searches)
+		SEARCHES
 	**/
 	public function search(){
-		$userId = Input::get('user_id');
-		$roleName = Input::get('role_name');
+		$user =  User::find( Input::get('user_id') );
+		$role = Input::get('role_name');
 		$search = Input::get('search_string');
-		
-		$user =  User::find($userId);
+
+		$groups = $this->getGroupsToSearch($user, $role);
 		$names = (isset($search)) ? explode(' ', $search) : false;
 		$notTextToSearch = !$names;
 
-		$groups = $this->getGroupsToSearch($user, $roleName);
-				
 		if( $notTextToSearch ){
 			return json_encode([
-				'success' => 1, 'groups' => $this->returnCurrentGroupsOrAllIfAny($groups)
+				'status' => env('STATUS_OK'), 'groups' => $this->returnCurrentGroupsOrAllIfAny($groups)
 				]);
 		}
 		
 		return json_encode([
-			'success' => 1, 'groups' => $this->executeSearch($groups, $names)->get()]);
+			'status' => env('STATUS_OK'), 'groups' => $this->executeSearch($groups, $names)->get()]);
 	}
 
 	private function executeSearch($groups, $names){
 		if(!$groups)
-			$groups = Group::select('Group.id', 'Group.name')->where('Group.name', 'LIKE', "%{$names[0]}%");
+			$groups = Group::select('groups.id', 'groups.name')->where('groups.name', 'LIKE', "%{$names[0]}%");
 		else
-			$groups = $groups->select('Group.id', 'Group.name')->where('Group.name', 'LIKE', "%{$names[0]}%");
+			$groups = $groups->select('groups.id', 'groups.name')->where('groups.name', 'LIKE', "%{$names[0]}%");
 
 		for( $i = 1; $i < sizeof($names); $i++ ){
-			$groups = $groups->orWhere('Group.name', 'LIKE', "%{$names[$i]}%");
+			$groups = $groups->orWhere('groups.name', 'LIKE', "%{$names[$i]}%");
 		}
 		return $groups;
 	}
 
-	private function getGroupsToSearch($user, $roleName){
-		switch($roleName){			
+	private function getGroupsToSearch($user, $role){
+		switch($role){			
 			case null:
 				return false;
-			case self::CREATOR:
+			case env('CREATOR'):
 				return $user->createdGroups();
-			case self::NOT_MEMBER:
+			case env('NOT_MEMBER'):
 				return Group::notRelatedTo($user->id);
 			default:
-				$roleId = Role::where('name', '=', $roleName)->pluck('id');
-				return $user->groups()->where('id_role', '=', $roleId);
+				return $user->getGroupsAs($role);
 		}
 	}
 
 	private function returnCurrentGroupsOrAllIfAny($groups){
 		if(!$groups)
-			return Group::select('Group.id', 'Group.name')->get();
+			return Group::select('groups.id', 'groups.name')->get();
 		else
-			$groups->select('Group.id', 'Group.name')->get();
+			return $groups->select('groups.id', 'groups.name')->get();
 	}
 
 
 	/**
-		Group creation
-	**/
+		CREATION
+	*/
 	public function create(){
 		$groupName = Input::get('group_name');
 		$user = User::find(Input::get('user_id'));
@@ -118,9 +112,9 @@ class GroupsController extends Controller{
 		$userNotExistsOrCannotCreateGroup = !$user || !$user->canCreateGroup();
 		
 		if( $userNotExistsOrCannotCreateGroup )
-			return json_encode(['success' => 0, 'exception' => 'GroupsLimitReached']);				
+			return json_encode(['status' => env('STATUS_KO'), 'exception' => 'GroupsLimitReached']);				
 		if( !$this->isValidGroupData($groupName) ) 
-			return json_encode(['success' => 0, 'exception' => 'InvalidName']);
+			return json_encode(['status' => env('STATUS_KO'), 'exception' => 'InvalidName']);
 
 		return $this->createIt($groupName, $user);
 	}
@@ -128,7 +122,7 @@ class GroupsController extends Controller{
 	private function isValidGroupData($name){
 		$validator = Validator::make(
 				array('name' => $name),
-				array('name' => 'required|min:8|max:45|unique:Group')
+				array('name' => 'required|min:8|max:45|unique:groups')
 			);
 		return !$validator->fails();
 	}
@@ -136,11 +130,11 @@ class GroupsController extends Controller{
 	private function createIt($name, $creator){
 		$group = new Group(['name' => $name ]);
 		$creator->createdGroups()->save($group);
-		return json_encode([ 'success' => 1, 'group_id' => $group->id ]);		
+		return json_encode([ 'status' => env('STATUS_OK'), 'group_id' => $group->id ]);		
 	}
 
 	/**
-		Deletion
+		DELETION
 	*/
 
 	public function delete($groupId){
@@ -148,14 +142,14 @@ class GroupsController extends Controller{
 
 		$group = Group::find($groupId);
 		$groupNotFound = !$group;
-		if($groupNotFound) return json_encode(['success' => 0, 'exception' => 'GroupNotFound']);
+		if($groupNotFound) return json_encode(['status' => env('STATUS_KO'), 'exception' => 'GroupNotFound']);
 
 		$userDoesNotHavePermission = $group->creator->id != $userId;
-		if($userDoesNotHavePermission) return json_encode(['success' => 0, 'exception' => 'UserDoesNotHavePermission']);
+		if($userDoesNotHavePermission) return json_encode(['status' => env('STATUS_KO'), 'exception' => 'UserDoesNotHavePermission']);
 
 		$group->questions()->delete();
 		$group->delete();
-		return json_encode(['success' => 1]);
+		return json_encode(['status' => env('STATUS_OK')]);
 	}
 
 }   

@@ -85,12 +85,14 @@ class UserTableSeeder extends Seeder
 			[
 				'name' => 'adri',
 				'email' => 'adri@gmail.com',
-				'password' => Hash::make('adri')
+				'password' => Hash::make('adri'),
+				'remember_token' => '1234567890'
 			],
 			[
 				'name' => 'victor',
 				'email' => 'victor@gmail.com',
-				'password' => Hash::make('victor')
+				'password' => Hash::make('victor'),
+				'remember_token' => '1234567890'
 			],
 			[
 				'name' => 'waldo',
@@ -100,7 +102,8 @@ class UserTableSeeder extends Seeder
 			[
 				'name' => 'miguel',
 				'email' => 'miguel@gmail.com',
-				'password' => Hash::make('miguel')
+				'password' => Hash::make('miguel'),
+				'remember_token' => '1234567890'
 			],
 			[
 				'name' => 'borja',

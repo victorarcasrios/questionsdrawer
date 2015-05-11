@@ -2,11 +2,6 @@
 
 class SignupTest extends TestCase {
 
-	/**
-	 * A basic functional test example.
-	 *
-	 * @return void
-	 */
 	public function testCaseOk()
 	{
 		$params = [

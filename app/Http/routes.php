@@ -30,16 +30,16 @@ Route::group(['prefix' => 'api'], function(){
             // END 
 
             // Auth routes
-            Route::post( '/check', 'UsersController@isLoggedUser');
+            // Route::post( '/check', 'UsersController@isLoggedUser');
             Route::post( '/', 'UsersController@signup' );
             Route::post( '/signin', 'UsersController@signin' );
             Route::post( '/signout', ['middleware' => 'loggedUser', 'uses' => 'UsersController@signout'] );
 
             // Other routes
-            Route::get('/{id}/groups/created/count', 'UsersController@countOwnGroups');
-            Route::get('/{id}/groups/', 'UsersController@getRelatedGroups');
-            Route::get('/{id}/roles', 'UsersController@getRolesFor');
-            Route::get('/{id}/{membership}/groups', 'GroupsController@getAllForMember');
+            // Route::get('/{id}/groups/created/count', 'UsersController@countOwnGroups');
+            // Route::get('/{id}/groups/', 'UsersController@getRelatedGroups');
+            // Route::get('/{id}/roles', 'UsersController@getRolesFor');
+            // Route::get('/{id}/{membership}/groups', 'GroupsController@getAllForMember');
         });
 
         /**
@@ -49,13 +49,13 @@ Route::group(['prefix' => 'api'], function(){
         Route::group(['prefix' => 'groups'], function(){
             Route::get( '/', 'GroupsController@getAll' );
             
-            Route::group( ['prefix' => '/{groupId}', 'middleware' => 'groupExists'], function(){
-                Route::get( '/', 'GroupsController@get');     
-            });            
-        });
+        //     Route::group( ['prefix' => '/{groupId}', 'middleware' => 'groupExists'], function(){
+        //         Route::get( '/', 'GroupsController@get');     
+        //     });            
+        // });
 
-        Route::group(['prefix' => 'questions'], function(){
-            Route::get( '/', 'QuestionsController@listAll' );
+        // Route::group(['prefix' => 'questions'], function(){
+        //     Route::get( '/', 'QuestionsController@listAll' );
         });
 
         /**
@@ -63,26 +63,28 @@ Route::group(['prefix' => 'api'], function(){
         **/
         Route::group(['middleware' => 'loggedUser'], function(){
 
-            ## Just Groups
+            /**
+                GROUPS
+            **/
             Route::group(['prefix' => 'groups'], function(){
                 Route::post( '/searches', 'GroupsController@search' );
-                Route::post( '/create', 'GroupsController@create' );
-                Route::delete( '/{id}', 'GroupsController@delete' );
+                Route::post( '/', 'GroupsController@create' );
+                // Route::delete( '/{id}', 'GroupsController@delete' );
                 
                 ## Questions of a specific group
                 Route::group(['prefix' => '{groupId}/questions', 'middleware' => 'groupExists'], function(){
-                    Route::post( '/', 'QuestionsController@create' );
-                    Route::post( '/searches', 'QuestionsController@search' );
+                    // Route::post( '/', 'QuestionsController@create' );
+                    // Route::post( '/searches', 'QuestionsController@search' );
                 });                
             });
 
             ## Just Questions
-            Route::group(['prefix' => 'questions'], function(){
-                ## Answers of a specific question
-                Route::group(['prefix' => '{questionId}/answers', 'middleware' => 'questionExists'], function(){
-                   Route::post( '/', 'AnswersController@create' ); 
-                });
-            });
+            // Route::group(['prefix' => 'questions'], function(){
+            //     ## Answers of a specific question
+            //     Route::group(['prefix' => '{questionId}/answers', 'middleware' => 'questionExists'], function(){
+            //        Route::post( '/', 'AnswersController@create' ); 
+            //     });
+            // });
         });
 });
 

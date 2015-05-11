@@ -60,17 +60,17 @@ class UsersController extends Controller{
         ]);
     }
     
-    /** 
-        Checks if user is logged
-        @returns JSON (success, [exception])
-    **/
-    public function isLoggedUser(){
-        $user = User::find(Input::get("user_id"));
-        if( !$user || $user->remember_token !== Input::get('csrf_token')  )
-            return json_encode(array('success' => 0, 'exception' => 'IncorrectData'));
+    // /** 
+    //     Checks if user is logged
+    //     @returns JSON (success, [exception])
+    // **/
+    // public function isLoggedUser(){
+    //     $user = User::find(Input::get("user_id"));
+    //     if( !$user || $user->remember_token !== Input::get('csrf_token')  )
+    //         return json_encode(array('success' => 0, 'exception' => 'IncorrectData'));
         
-        return json_encode(array( 'success' => 1 ));
-    }
+    //     return json_encode(array( 'success' => 1 ));
+    // }
 
     /**
         SIGNUP
@@ -139,11 +139,11 @@ class UsersController extends Controller{
     }
     
     /**
-      Returns the id of the user and a token if credentials are OK
-      @param String $name
-      @param String $email
-      @param String $password
-      @return csrf_token if credentials combo is OK, false if KO
+     * Returns the id of the user and a token if credentials are OK
+     * @param String $name
+     * @param String $email
+     * @param String $password
+     * @return csrf_token if credentials combo is OK, false if KO
      */
     private function getIdAndCSRFTokenOrFail($name, $email, $password){
         $user = User::where('name', '=', $name)->get()->first();
@@ -156,9 +156,9 @@ class UsersController extends Controller{
     }    
     
     /**
-      Create a csrf_token for the $user and returns it
-      @param User $user
-      @return String new csrf_token (also saves it in users db)
+     * Create a csrf_token for the $user and returns it
+     * @param User $user
+     * @return String new csrf_token (also saves it in users db)
      */
     private function getCSRFTokenFor($user){
         $token = csrf_token();
@@ -166,10 +166,14 @@ class UsersController extends Controller{
         $user->save();
         return $token;
     }
+
+    /**
+        SIGNOUT
+    */
     
     /**
-        Signout user
-    **/
+     * Signout user (if passes auth middleware) with the given id
+     */
     public function signout(){
         $user = User::find(Input::get('user_id'));
         $user->remember_token = null;

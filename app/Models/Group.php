@@ -28,12 +28,12 @@ class Group extends Model{
     public static function notRelatedTo($userId){
     	return self::select('id', 'name')
     				->whereNotIn('id', function($query) use($userId){
-    					$query->from('Group')
+    					$query->from('groups')
 		    					->select('id')
-		    					->leftJoin('Membership', 'Group.id', '=', 'Membership.id_group')
+		    					->leftJoin('members', 'groups.id', '=', 'members.group_id')
 		    					->where( function($query) use($userId){
-		    						$query->where('Membership.id_user', '=', $userId)
-		    								->orWhere('Group.id_creator', '=', $userId);
+		    						$query->where('members.user_id', '=', $userId)
+		    								->orWhere('groups.creator_id', '=', $userId);
 		    					});
     				});
 

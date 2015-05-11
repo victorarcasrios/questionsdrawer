@@ -10,29 +10,36 @@ class User extends Model{
     	Relations
     **/
 
-    public function roles(){
-        return $this->belongsToMany('App\Models\Role', 'Membership', 'id_user', 'id_role');
-    }
+    // public function roles(){
+    //     return $this->belongsToMany('App\Models\Role', 'Members', 'user_id', 'id');
+    // }
 
     public function groups(){
-        return $this->belongsToMany('App\Models\Group', 'Membership', 'id_user', 'id_group');
+        return Group::join('members', 'members.group_id', '=', 'groups.id')
+                    ->where('members.user_id', '=', $this->id);
     }
 
     public function createdGroups(){
-        return $this->hasMany('App\Models\Group', 'id_creator');
+        return $this->hasMany('App\Models\Group', 'creator_id');
     }
 
-    public function questions(){
-        return $this->hasMany('App\Models\Question', 'id_author');
-    }
+    // public function questions(){
+    //     return $this->hasMany('App\Models\Question', 'author_id');
+    // }
 
-    public function answers(){
-        return $this->hasMany('App\Models\Answer', 'id_author');
-    }
+    // public function answers(){
+    //     return $this->hasMany('App\Models\Answer', 'author_id');
+    // }
     
     /**
     	Methods
     **/
+
+    public function  getGroupsAs($role){
+        return $this->groups()
+                    ->where('role', '=', $role)
+                    ->where('status', '=', 'Active');
+    }
 
     public function canCreateGroup(){
     	$max_groups = intval( env('MAX_GROUPS_CREATED_BY_USER') );
@@ -41,13 +48,9 @@ class User extends Model{
     	return ( $groups_count < $max_groups );
     }
 
-    public function answerFor(Question $question){
-        return Answer::where('id_author', '=', $this->id)
-                        ->where('id_question', '=', $question->id);
-    }
-
-    // public function  getGroupsAs($membership){
-    //     return $this->groups()->where('Role.name', '=', $membership);
+    // public function answerFor(Question $question){
+    //     return Answer::where('id_author', '=', $this->id)
+    //                     ->where('id_question', '=', $question->id);
     // }
 
 }
