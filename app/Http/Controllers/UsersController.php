@@ -20,9 +20,9 @@ class UsersController extends Controller{
     }
     
     ## DEBUG METHOD ONLY
-    public function get($id){
-        return User::find($id);
-    }
+    // public function get($id){
+    //     return User::find($id);
+    // }
 
     // public function getRelatedGroups($userId){
     //     $user = User::find($userId);
@@ -99,17 +99,17 @@ class UsersController extends Controller{
     //     ]);
     // }
     
-    // /** 
-    //     Checks if user is logged
-    //     @returns JSON (success, [exception])
-    // **/
-    // public function isLoggedUser(){
-    //     $user = User::find(Input::get("user_id"));
-    //     if( !$user || $user->remember_token !== Input::get('csrf_token')  )
-    //         return json_encode(array('success' => 0, 'exception' => 'IncorrectData'));
+    /** 
+     * Checks if user is logged
+     * @return JSON [status, [exception]]
+     */
+    public function isLoggedUser(){
+        $user = User::find(Input::get("user_id"));
+        if( !$user || $user->remember_token !== Input::get('csrf_token')  )
+            return json_encode(array('status' => env('STATUS_KO'), 'exception' => 'IncorrectData'));
         
-    //     return json_encode(array( 'success' => 1 ));
-    // }
+        return json_encode(array( 'status' => env('STATUS_OK') ));
+    }
 
     /**
         SIGNUP

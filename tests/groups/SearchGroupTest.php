@@ -127,6 +127,7 @@ class SearchGroupsTest extends TestCase {
 			'user_id' => $user->id,
 			'csrf_token' => $user->remember_token,
 			'role_name' => 'Student',
+			'status' => 'Active'
 		];
 
 		$response = $this->call('POST', 'api/groups/searches', $params);
@@ -153,6 +154,7 @@ class SearchGroupsTest extends TestCase {
 			'user_id' => $user->id,
 			'csrf_token' => $user->remember_token,
 			'role_name' => 'Teacher',
+			'status' => 'Active',
 			'search_string' => 2
 		];
 

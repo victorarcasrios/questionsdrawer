@@ -15,7 +15,7 @@ use App\Models\Role;
 class GroupsController extends Controller{
 
 	/**
-		Basic Retrieving data
+		VIEW
 	**/
 	public function get($id){
 		$group = Group::find($id);
@@ -29,23 +29,24 @@ class GroupsController extends Controller{
 			]);
 	}
 
-	// NOT USED BY THE APP. PLEASE BE CAREFUL, NOT TESTED
-	public function getAll(){
-		$groups = Group::get()->lists('name', 'id');
-		return json_encode(['success' => 1, "groups" => $groups]);		
-	}
-	// NOT USED BY THE APP. PLEASE BE CAREFUL, NOT TESTED
-	public function getAllForMember($id, $roleName){
-		$user = User::find($id);
+	// // NOT USED BY THE APP. PLEASE BE CAREFUL, NOT TESTED
+	// public function getAll(){
+	// 	$groups = Group::get()->lists('name', 'id');
+	// 	return json_encode(['success' => 1, "groups" => $groups]);		
+	// }
 
-		if( !$user ) return json_encode(['success' => 0, 'exception' => 'UserNotFound']);
+	// // NOT USED BY THE APP. PLEASE BE CAREFUL, NOT TESTED
+	// public function getAllForMember($id, $roleName){
+	// 	$user = User::find($id);
 
-		$roleId = Role::where( 'name', '=', $roleName )->pluck( 'id' );
-		if( !$roleId ) return json_encode(['success' => 0, 'exception' => 'RoleNotFound']);
+	// 	if( !$user ) return json_encode(['success' => 0, 'exception' => 'UserNotFound']);
 
-		$groups = $user->groups()->select('id', 'name')->where('id_role', '=', $roleId)->get();
-		return json_encode(['success' => 1, 'groups' => $groups]);
-	}
+	// 	$roleId = Role::where( 'name', '=', $roleName )->pluck( 'id' );
+	// 	if( !$roleId ) return json_encode(['success' => 0, 'exception' => 'RoleNotFound']);
+
+	// 	$groups = $user->groups()->select('id', 'name')->where('id_role', '=', $roleId)->get();
+	// 	return json_encode(['success' => 1, 'groups' => $groups]);
+	// }
 
 	/**
 		SEARCHES
@@ -53,9 +54,10 @@ class GroupsController extends Controller{
 	public function search(){
 		$user =  User::find( Input::get('user_id') );
 		$role = Input::get('role_name');
+		$status = Input::get('status');
 		$search = Input::get('search_string');
 
-		$groups = $this->getGroupsToSearch($user, $role);
+		$groups = $this->getGroupsToSearch($user, $role, $status);
 		$names = (isset($search)) ? explode(' ', $search) : false;
 		$notTextToSearch = !$names;
 
@@ -81,7 +83,7 @@ class GroupsController extends Controller{
 		return $groups;
 	}
 
-	private function getGroupsToSearch($user, $role){
+	private function getGroupsToSearch($user, $role, $status){
 		switch($role){			
 			case null:
 				return false;
@@ -90,7 +92,7 @@ class GroupsController extends Controller{
 			case env('NOT_MEMBER'):
 				return Group::notRelatedTo($user->id);
 			default:
-				return $user->getGroupsAs($role);
+				return $user->getGroupsAs($role, $status);
 		}
 	}
 
@@ -133,19 +135,32 @@ class GroupsController extends Controller{
 		return json_encode([ 'status' => env('STATUS_OK'), 'group_id' => $group->id ]);		
 	}
 
-	/**
-		DELETION
-	*/
+	public function update($groupId)
+	{
+		$group = Group::find($groupId);
+		$groupName = Input::get('group_name');
+		$user = User::find(Input::get('user_id'));
+
+		if( !$user )
+			return json_encode(['status' => env('STATUS_KO'), 'exception' => 'UserNotFound']);
+		if( !$this->isValidGroupData($groupName) )
+			return json_encode(['status' => env('STATUS_KO'), 'exception' => 'InvalidName']);
+		if( !$user->isCreator($group) )
+			return json_encode(['status' => env('STATUS_KO'), 'exception' => 'UserCanNotUpdateGroup']);
+
+		$group->name = $groupName;
+		$group->save();
+		return json_encode(['status' => env('STATUS_OK')]);
+	}
+
 
 	public function delete($groupId){
-		$userId = Input::get('user_id');
-
+		$user = User::find(Input::get('user_id'));
 		$group = Group::find($groupId);
-		$groupNotFound = !$group;
-		if($groupNotFound) return json_encode(['status' => env('STATUS_KO'), 'exception' => 'GroupNotFound']);
+		$userIsNotCreator = !$user->isCreator($group);
 
-		$userDoesNotHavePermission = $group->creator->id != $userId;
-		if($userDoesNotHavePermission) return json_encode(['status' => env('STATUS_KO'), 'exception' => 'UserDoesNotHavePermission']);
+		if($userIsNotCreator) 
+			return json_encode(['status' => env('STATUS_KO'), 'exception' => 'UserDoesNotHavePermission']);
 
 		$group->questions()->delete();
 		$group->delete();

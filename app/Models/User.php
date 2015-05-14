@@ -33,24 +33,54 @@ class User extends Model{
         return $this->members()->select(\DB::raw('DISTINCT(status)'));
     }
 
-    // public function questions(){
-    //     return $this->hasMany('App\Models\Question', 'author_id');
-    // }
+    public function questions(){
+        return $this->hasMany('App\Models\Question', 'author_id');
+    }
 
-    // public function answers(){
-    //     return $this->hasMany('App\Models\Answer', 'author_id');
-    // }
+    public function answers(){
+        return $this->hasMany('App\Models\Answer', 'author_id');
+    }
     
     /**
     	Methods
     **/
 
-    public function  getGroupsAs($role){
-        return $this->groups()
-                    ->where('role', '=', $role)
-                    ->where('status', '=', 'Active');
+    /**
+     * Returns TRUE if this user is the creator of the given group, FALSE else
+     * @param Group $group
+     * @return boolean TRUE if is the creator, FALSE if not
+     */
+    public function isCreator($group)
+    {
+        return $this->id == $group->creator_id;
     }
 
+    public function isTeacher($group)
+    {
+        return Member::where('group_id', '=', $group->id)
+                        ->where('user_id', '=', $this->id)
+                        ->where('role', '=', 'Teacher')
+                        ->where('status', '=', 'Active')
+                        ->exists();
+    }
+
+    /**
+     * Return a query that selects all groups where this user have the given role and status as member
+     * @param string $role [Teacher, Student]
+     * @param string $status [Active, Demanded, Denied, Banned]
+     * @return a select query with all the groups with the user as member with those $role and $status
+     */
+    public function  getGroupsAs($role, $status){
+        return $this->groups()
+                    ->where('role', '=', $role)
+                    ->where('status', '=', $status);
+    }
+
+    /**
+     * Returns TRUE if the number of groups created by the user is under the limit, 
+     * FALSE if is equal or higher
+     * @return TRUE if can create more, FALSE if not
+     */
     public function canCreateGroup(){
     	$max_groups = intval( env('MAX_GROUPS_CREATED_BY_USER') );
     	$groups_count = $this->createdGroups()->count();

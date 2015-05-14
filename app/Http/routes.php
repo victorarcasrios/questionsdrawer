@@ -29,10 +29,10 @@ Route::group(['prefix' => 'api'], function(){
             // END 
 
             // Auth routes
-            // Route::post( '/check', 'UsersController@isLoggedUser');
             Route::post( '/', 'UsersController@signup' );
             Route::post( '/signin', 'UsersController@signin' );
             Route::post( '/signout', ['middleware' => 'loggedUser', 'uses' => 'UsersController@signout'] );
+            Route::post( '/check', 'UsersController@isLoggedUser');
 
             // Other routes
             Route::group(['prefix' => '/{id}', 'middleware' => 'userExists'], function(){
@@ -72,13 +72,20 @@ Route::group(['prefix' => 'api'], function(){
             Route::group(['prefix' => 'groups'], function(){
                 Route::post( '/searches', 'GroupsController@search' );
                 Route::post( '/', 'GroupsController@create' );
-                // Route::delete( '/{id}', 'GroupsController@delete' );
-                
-                ## Questions of a specific group
-                Route::group(['prefix' => '{groupId}/questions', 'middleware' => 'groupExists'], function(){
-                    // Route::post( '/', 'QuestionsController@create' );
+
+                # A Group
+                Route::group(['prefix' => '/{groupId}', 'middleware' => 'groupExists'], function(){
+                    Route::put( '/', 'GroupsController@update' );
+                    Route::post( '/delete', 'GroupsController@delete' );
+
+                    # Its Questions
+                    Route::group(['prefix' => '/questions'], function(){
+                        Route::post( '/', 'QuestionsController@create' );
                     // Route::post( '/searches', 'QuestionsController@search' );
-                });                
+                });     
+                });
+                
+                               
             });
 
             ## Just Questions

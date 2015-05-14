@@ -17,7 +17,7 @@ class GroupExists implements Middleware{
         $groupNotFound = !$group;
 
         if( $groupNotFound )
-            return json_encode(['success' => '0', 'exception' => 'GroupNotFound']);
+            return json_encode(['status' => env('STATUS_ROUTING_ERROR'), 'exception' => 'GroupNotFound']);
                     
         return $next($request);
     }

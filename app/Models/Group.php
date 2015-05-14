@@ -10,21 +10,43 @@ class Group extends Model{
         Relations
     */ 
     public function creator(){
-    	return $this->belongsTo('App\Models\User', 'id_creator');
+    	return $this->belongsTo('App\Models\User', 'creator_id');
     }
 
     public function questions(){
-        return $this->hasMany('App\Models\Question', 'id_group');        
+        return $this->hasMany('App\Models\Question', 'group_id');        
     }
 
-    public function members(){
-        return $this->belongsToMany('App\Models\User', 'Membership', 'id_group', 'id_user');
+    // public function members(){
+    //     return $this->belongsToMany('App\Models\User', 'Member', 'group_id', 'user_id');
+    // }
+
+    /**
+        Boolean return methods
+    */
+
+    // public function hasMember($user){
+    //     return $this->members()->where('id', '=', $user->id)->exists();
+    // }
+
+    /**
+     * Returns TRUE if the groups has a question with the given $text, FALSE if not
+     * @param string $text text of the question
+     * @return boolean TRUE if group has question, FALSE if not
+     */
+    public function hasQuestion($text){
+        return $this->questions()->where('text', '=', $text)->exists();
     }
 
     /**
         Aditional GETTERS
     */
         
+    /**
+     * Returns a query that selects all the groups where the indicated user is not creator nor member
+     * @param integer $userId id of the user
+     * @return Eloquent/Fluent select query
+     */
     public static function notRelatedTo($userId){
     	return self::select('id', 'name')
     				->whereNotIn('id', function($query) use($userId){
@@ -43,17 +65,5 @@ class Group extends Model{
 		// (SELECT id FROM Group
 		// LEFT JOIN Membership ON (Group.id = Membership.id_group)
 		// WHERE Membership.id_user = 23 OR Group.id_creator = 23)
-    }
-
-    /**
-        Boolean return methods
-    */
-
-    public function hasMember($user){
-        return $this->members()->where('id', '=', $user->id)->exists();
-    }
-
-    public function hasQuestion($text){
-        return $this->questions()->where('text', '=', $text)->exists();
     }
 }

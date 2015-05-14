@@ -13,6 +13,7 @@ use App\Models\User;
 class LoggedUser implements Middleware{
     
     public function handle($request, Closure $next) {
+
         // Incorrect data or user does not exist
         if( !$request->input('csrf_token') || !$request->input('user_id') 
             || !( $user = User::find( $request->input('user_id') ) ) ){
