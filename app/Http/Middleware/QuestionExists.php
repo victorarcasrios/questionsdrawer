@@ -17,7 +17,7 @@ class QuestionExists implements Middleware{
         $questionNotFound = !$question;
 
         if( $questionNotFound )
-            return json_encode(['success' => '0', 'exception' => 'QuestionNotFound']);
+            return json_encode(['status' => env('STATUS_ROUTING_ERROR'), 'exception' => 'QuestionNotFound']);
                     
         return $next($request);
     }

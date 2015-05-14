@@ -88,13 +88,20 @@ Route::group(['prefix' => 'api'], function(){
                                
             });
 
-            ## Just Questions
-            // Route::group(['prefix' => 'questions'], function(){
-            //     ## Answers of a specific question
-            //     Route::group(['prefix' => '{questionId}/answers', 'middleware' => 'questionExists'], function(){
-            //        Route::post( '/', 'AnswersController@create' ); 
-            //     });
-            // });
+            /**
+                A SPECIFIC QUESTION
+            **/
+
+            # Just Questions
+            Route::group(['prefix' => 'questions/{questionId}', 'middleware' => 'questionExists'], function(){
+                
+                Route::put( '/', 'QuestionsController@update' );
+                Route::post( '/delete', 'QuestionsController@delete' );
+
+                // Route::group(['prefix' => '{questionId}/answers', 'middleware' => 'questionExists'], function(){
+                //    Route::post( '/', 'AnswersController@create' ); 
+                // });
+            });
         });
 });
 

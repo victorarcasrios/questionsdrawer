@@ -32,10 +32,16 @@ class Group extends Model{
     /**
      * Returns TRUE if the groups has a question with the given $text, FALSE if not
      * @param string $text text of the question
+     * @param integer $except id of an existent question that can have the $text value as text
      * @return boolean TRUE if group has question, FALSE if not
      */
-    public function hasQuestion($text){
-        return $this->questions()->where('text', '=', $text)->exists();
+    public function hasQuestion($text, $except = false){
+        $query = $this->questions()->where('text', '=', $text);
+
+        if($except !== false)
+            $query = $query->where('id', '<>', $except);
+
+        return $query->exists();
     }
 
     /**

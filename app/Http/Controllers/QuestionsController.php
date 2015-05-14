@@ -74,6 +74,32 @@ class QuestionsController extends Controller{
     	return $question->id;
     }
 
+    public function update($questionId)
+    {
+        $user = User::find(Input::get('user_id'));
+        $question = Question::find($questionId);
+        $questionText = Input::get('question_text');
+        $userCanNotUpdate = ! $user->isCreator($question->group) && ! $user->isQuestionAuthor($question);
+
+        # KOs
+        if($userCanNotUpdate)
+            return json_encode(['status' => env('STATUS_KO'), 'exception' => 'UserDoesNotHavePermission']);
+        if($this->isNotValidQuestionText($questionText))
+            return json_encode(['status' => env('STATUS_KO'), 'exception' => 'InvalidQuestionText']);
+        if($question->group->hasQuestion($questionText, $question->id))
+            return json_encode(['status' => env('STATUS_KO'), 'exception' => 'GroupAlreadyHasQuestion']);
+
+        # OK
+        $question->text = $questionText;
+        $question->save();
+        return json_encode(['status' => env('STATUS_OK')]);
+    }
+
+    public function delete($questionId)
+    {
+
+    }
+
     /**
         Searches
     */
