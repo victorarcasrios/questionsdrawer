@@ -82,4 +82,27 @@ class UpdateQuestionTest extends TestCase {
 		$this->seed();
 	}
 
+	/**
+	 * For the correct data, but not valid user credentials, returns a KO
+	 */
+	public function testCaseKoNotAllowedAuthor()
+	{
+		$user = User::find(4);
+		$question = Question::find(1);
+		
+		$params = [
+			'user_id' => $user->id,
+			'csrf_token' => $user->remember_token,
+			'question_text' => 'aLazyTextForANotMineQuestionForTest'
+		];
+
+		$response = $this->call('PUT', "api/questions/{$question->id}", $params);
+		$responseData = json_decode($response->getContent(), true);
+		$expectedResponse = [ 'status' => env('STATUS_KO'), 'exception' => 'UserDoesNotHavePermission'];
+
+		$this->assertEquals($responseData, $expectedResponse);
+
+		$this->seed();
+	}
+
 }

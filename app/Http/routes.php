@@ -81,7 +81,7 @@ Route::group(['prefix' => 'api'], function(){
                     # Its Questions
                     Route::group(['prefix' => '/questions'], function(){
                         Route::post( '/', 'QuestionsController@create' );
-                    // Route::post( '/searches', 'QuestionsController@search' );
+                        Route::post( '/searches', 'QuestionsController@search' );
                 });     
                 });
                 
@@ -98,9 +98,9 @@ Route::group(['prefix' => 'api'], function(){
                 Route::put( '/', 'QuestionsController@update' );
                 Route::post( '/delete', 'QuestionsController@delete' );
 
-                // Route::group(['prefix' => '{questionId}/answers', 'middleware' => 'questionExists'], function(){
-                //    Route::post( '/', 'AnswersController@create' ); 
-                // });
+                Route::group(['prefix' => '/answers', 'middleware' => 'userCanSeeQuestion'], function(){
+                   Route::post( '/', 'AnswersController@create' ); 
+                });
             });
         });
 });

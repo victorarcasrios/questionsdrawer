@@ -50,18 +50,33 @@ class User extends Model{
      * @param Group $group
      * @return boolean TRUE if is the creator, FALSE if not
      */
-    public function isCreator($group)
+    public function isCreator(Group $group)
     {
         return $this->id == $group->creator_id;
     }
 
-    public function isTeacher($group)
+    /**
+     * Returns TRUE if this user has the role teacher (active) in the given $group, FALSE else
+     * @param Group $group
+     * @return boolean TRUE if is a group teacher, FALSE if not
+     */
+    public function isTeacher(Group $group)
     {
         return Member::where('group_id', '=', $group->id)
                         ->where('user_id', '=', $this->id)
                         ->where('role', '=', 'Teacher')
                         ->where('status', '=', 'Active')
                         ->exists();
+    }
+
+    /**
+     * Returns TRUE if the given question was posted by this user, else FALSE
+     * @param Question $question
+     * @return boolean TRUE if this is the author of the questions, FALSE if not
+     */
+    public function isQuestionAuthor(Question $question)
+    {
+        return $question->author_id === $this->id;
     }
 
     /**
@@ -88,9 +103,14 @@ class User extends Model{
     	return ( $groups_count < $max_groups );
     }
 
-    // public function answerFor(Question $question){
-    //     return Answer::where('id_author', '=', $this->id)
-    //                     ->where('id_question', '=', $question->id);
-    // }
+    /**
+     * Returs a query selecting the answer of this user to the given question
+     * @param Question $question
+     * @return Eloquent query selecting the user's answer for this question
+     */
+    public function answerFor(Question $question){
+        return Answer::where('author_id', '=', $this->id)
+                        ->where('question_id', '=', $question->id);
+    }
 
 }

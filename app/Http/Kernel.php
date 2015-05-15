@@ -31,6 +31,7 @@ class Kernel extends HttpKernel {
         'userExists' => 'App\Http\Middleware\UserExists',
         'groupExists' => 'App\Http\Middleware\GroupExists',
         'questionExists' => 'App\Http\Middleware\QuestionExists',
+        'userCanSeeQuestion' => 'App\Http\Middleware\UserCanSeeQuestion'
 	];
 
 }

@@ -20,14 +20,14 @@ class AnswersController extends Controller{
 		$text = Input::get('answer_text');
 
 		$userHasAlreadyAnswered = $user->answerFor($question)->exists();
+
 		if($userHasAlreadyAnswered)
-			return json_encode(['success' => 0, 'exception' => 'UserHasAlreadyAnswered']);
-
+			return json_encode(['status' => env('STATUS_KO'), 'exception' => 'UserHasAlreadyAnswered']);
 		if($this->isNotValidAnswerText($text))
-			return json_encode(['success' => 0, 'exception' => 'InvalidAnswerText']);
+			return json_encode(['status' => env('STATUS_KO'), 'exception' => 'InvalidAnswerText']);
 
-		createIt($question, $user, $text);
-		return json_encode(['success' => 1]);
+		$this->createAnswer($question, $user, $text);
+		return json_encode(['status' => env('STATUS_OK')]);
 	}
 
 	private function isNotValidAnswerText($text){
@@ -38,10 +38,10 @@ class AnswersController extends Controller{
 		return $validator->fails();
 	}
 
-	private function createIt($question, $user, $text){
+	private function createAnswer($question, $user, $text){
 		$answer = new Answer([
-			"id_question" => $question->id,
-			"id_author" => $user->id,
+			"question_id" => $question->id,
+			"author_id" => $user->id,
 			"text" => $text
 			]);
 		$answer->push();		

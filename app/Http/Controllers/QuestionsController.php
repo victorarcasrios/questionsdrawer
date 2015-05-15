@@ -14,11 +14,8 @@ use App\Models\Question;
 
 class QuestionsController extends Controller{
 
-    // const ANSWERED = 1;
-    // const NOT_ANSWERED = 2;
-
 	/**
-		Creation
+		Creation, Edition and Deletion
 	*/
 
     /**
@@ -74,6 +71,11 @@ class QuestionsController extends Controller{
     	return $question->id;
     }
 
+    /**
+     * Updates the question with the given $questionId with the given $questionText
+     * @param integer $questionId id of the question to be updated
+     * @return json [status, [exception]]
+     */
     public function update($questionId)
     {
         $user = User::find(Input::get('user_id'));
@@ -95,75 +97,123 @@ class QuestionsController extends Controller{
         return json_encode(['status' => env('STATUS_OK')]);
     }
 
+    /**
+     * Deletes the question with the given question id
+     * @param integer $questionId the id of the question to be deleted
+     * @return json [status, [exception]]
+     */
     public function delete($questionId)
     {
+        $user = User::find(Input::get('user_id'));
+        $question = Question::find($questionId);
+        $userIsNotCreator = ! $user->isCreator($question->group);
+        $userIsNotAuthor = ! $user->isQuestionAuthor($question);
+        $userCanNotDelete = $userIsNotCreator && $userIsNotAuthor;
 
+        if($userCanNotDelete)
+            return json_encode(['status' => env('STATUS_KO'), 'exception' => 'UserDoesNotHavePermission']);
+
+        $question->delete();
+        return json_encode(['status' => env('STATUS_OK')]);
     }
 
     /**
         Searches
     */
 
-    // public function search($groupId){
-    //     $user = User::find(Input::get('user_id'));
-    //     $group = Group::find($groupId);
+    /**
+     * Searches in the group with the given group id for questions 
+     * with the given status [all/answered/not_answered] and text
+     * @param integer $groupId id of the group to be searched
+     * @return json [status, [questions/exception]]
+     */
+    public function search($groupId){
+        $user = User::find(Input::get('user_id'));
+        $group = Group::find($groupId);
+        $questionStatus = Input::get('question_status');
+        $searchString = Input::get('search_string'); // Can be 0, 1 or 2 (all, answered, not_answered)
         
-    //     $questionStatus = Input::get('question_status');
-    //     $searchString = Input::get('search_string');
+        $notSearchString = !$searchString;
+        $userIsNotCreator = $group->creator->id != $user->id;
+        $userIsNotMember = !$group->hasMember($user);
+        $userDoesNotHavePermission = $userIsNotCreator && $userIsNotMember;
+
+        if($userDoesNotHavePermission)
+            return json_encode(['status' => env('STATUS_KO'), 'exception' => 'UserDoesNotHavePermission']);
         
-    //     $notSearchString = !$searchString;
-    //     $userIsNotCreator = $group->creator->id != $user->id;
-    //     $userIsNotMember = !$group->hasMember($user);
-    //     $userDoesNotHavePermission = $userIsNotCreator && $userIsNotMember;
-
-    //     if($userDoesNotHavePermission)
-    //         return json_encode(['success' => 0, 'exception' => 'UserDoesNotHavePermission']);
+        $questions = $this->getQuestionsToSearch($user, $group, $questionStatus);
         
-    //     $questions = $this->getQuestionsToSearch($user, $group, $questionStatus);
-        
-    //     if($notSearchString){
-    //         $questions = $questions->orderBy('updated_at', 'desc')->get();
-    //         return json_encode(['success' => 1, 'questions' => $questions]);
-    //     }
+        if($notSearchString){
+            $questions = $questions->orderBy('updated_at', 'desc')->get();
+            return json_encode(['status' => env('STATUS_OK'), 'questions' => $questions]);
+        }
 
-    //     $questions = $this->searchQuestions($questions, $searchString);
-    //     return json_encode(['success' => 1, 'questions' => $questions]);
-    // }
+        $questions = $this->searchQuestions($questions, $searchString);
+        return json_encode(['status' => env('STATUS_OK'), 'questions' => $questions]);
+    }
 
-    // private function getQuestionsToSearch($user, $group, $status){
-    //     switch ($status) {
-    //         case null: default: 
-    //             $questions = $group->questions();    
-    //             break;
-    //         case self::ANSWERED:
-    //             $questions = $this->getAnsweredQuestions($user, $group);
-    //             break;
-    //         case self::NOT_ANSWERED:
-    //             $answeredQuestions = $this->getAnsweredQuestions($user, $group);
-    //             $questions = $this->getNotAnsweredQuestions($group, $answeredQuestions);
-    //             break;
-    //     }
-    //     return $questions->select('id', 'text');
-    // }
+    /**
+     * Returns all the questions to search in
+     * @param User $user user that makes the search
+     * @param Group $group group to be searched
+     * @param integer $status status of the question [all/answered/not_answered]
+     * @return array of Question objects
+     */
+    private function getQuestionsToSearch($user, $group, $status){
+        switch ($status) {
+            case env('ALL_QUESTIONS'): case null: default: 
+                $questions = $group->questions();    
+                break;
+            case env('ANSWERED_QUESTIONS'):
+                # $questions = $group->questions->answeredBy($user);
+                $questions = $this->getAnsweredQuestions($user, $group);
+                break;
+            case env('NOT_ANSWERED_QUESTIONS'):
+                $answeredQuestions = $this->getAnsweredQuestions($user, $group);
+                $questions = $this->getNotAnsweredQuestions($group, $answeredQuestions);
+                break;
+        }
+        return $questions->select('id', 'text');
+    }
 
-    // private function getAnsweredQuestions($user, $group){
-    //     return $group->questions()->whereHas(
-    //                 'answers', function($query) use($user){
-    //                     $query->where('id_author', '=', $user->id);
-    //             });
-    // }
+    /**
+     * Return a select Eloquent query with all the questions of the indicated
+     * group answered by the user
+     * @param User $user the user that answered the questions
+     * @param Group $group the group of the questions
+     * @return Eloquent select query
+     */
+    private function getAnsweredQuestions($user, $group){
+        return $group->questions()->whereHas(
+                    'answers', function($query) use($user){
+                        $query->where('author_id', '=', $user->id);
+                });
+    }
 
-    // private function getNotAnsweredQuestions($group, $answeredQuestions){
-    //     return $group->questions()->whereNotIn('id', $answeredQuestions->lists('id'));
-    // }
+    /**
+     * Return all the questions in the indicated group that are not in the given array
+     * @param Group $group the group of the questions
+     * @param array of Question objects
+     * @return Eloquent select query
+     */
+    private function getNotAnsweredQuestions($group, $answeredQuestions){
+        return $group->questions()->whereNotIn('id', $answeredQuestions->lists('id'));
+    }
 
-    // private function searchQuestions($questions, $searchString){
-    //     $words = explode(' ', $searchString);
-    //     $questions = $questions->where('text', 'LIKE', "%{$words[0]}%");
-    //     for ($i = 1; $i < sizeof($words); $i++) {
-    //        $questions = $questions->orWhere('text', 'LIKE', "%{$words[$i]}%"); 
-    //     }
+    /**
+     * Get an array of questions and return another one with the questions 
+     * that contains at least one word of the given ones 
+     * @param array of Question objects $questions questions to search the words in
+     * @param array of strings $searchString words to search in the questions
+     * @return array of Question objects questions that contains the given words
+     */
+    private function searchQuestions($questions, $searchString){
+        $words = explode(' ', $searchString);
+        $questions = $questions->where('text', 'LIKE', "%{$words[0]}%");
+        for ($i = 1; $i < sizeof($words); $i++) {
+           $questions = $questions->orWhere('text', 'LIKE', "%{$words[$i]}%"); 
+        }
             
-    //     return $questions->orderBy('updated_at', 'desc')->get();
-    // }
+        return $questions->orderBy('updated_at', 'desc')->get();
+    }
 }

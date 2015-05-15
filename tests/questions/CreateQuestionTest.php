@@ -67,7 +67,7 @@ class CreateQuestionTest extends TestCase {
 	{
 		$user = User::find(4);
 		$group = Group::find(1);
-
+		
 		$params = [
 			'user_id' => $user->id,
 			'csrf_token' => $user->remember_token,

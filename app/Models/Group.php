@@ -17,17 +17,34 @@ class Group extends Model{
         return $this->hasMany('App\Models\Question', 'group_id');        
     }
 
-    // public function members(){
-    //     return $this->belongsToMany('App\Models\User', 'Member', 'group_id', 'user_id');
-    // }
+    public function members(){
+        return $this->belongsToMany('App\Models\User', 'members', 'group_id', 'user_id');
+    }
 
     /**
         Boolean return methods
     */
 
-    // public function hasMember($user){
-    //     return $this->members()->where('id', '=', $user->id)->exists();
-    // }
+    /**
+     * Return TRUE if this group has the given user, else FALSE
+     * @param User $user to check membership
+     * @return boolean TRUE if is member, FALSE else
+     */
+    public function hasMember(User $user){
+        return $this->members()->where('id', '=', $user->id)->exists();
+    }
+
+    /**
+     * Return TRUE if this group has the given user as active member, else FALSE
+     * @param User $user to check active membership
+     * @return boolean TRUE if is active member, FALSE else
+     */
+    public function hasActiveMember(User $user){
+        return $this->members()
+                  ->where('id', '=', $user->id)
+                  ->where('status', '=', 'Active')
+                  ->exists();
+    }
 
     /**
      * Returns TRUE if the groups has a question with the given $text, FALSE if not
