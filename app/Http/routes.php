@@ -98,9 +98,21 @@ Route::group(['prefix' => 'api'], function(){
                 Route::put( '/', 'QuestionsController@update' );
                 Route::post( '/delete', 'QuestionsController@delete' );
 
+                # Its Answers
                 Route::group(['prefix' => '/answers', 'middleware' => 'userCanSeeQuestion'], function(){
                    Route::post( '/', 'AnswersController@create' ); 
+                   Route::post( '/list', 'AnswersController@index');
                 });
+            });
+
+            /**
+                ANSWERS
+            **/
+
+            # Just Answers
+            Route::group(['prefix' => 'answers/{answerId}', 'middleware' => 'answerExists'], function(){
+                Route::put( '/', 'AnswersController@update' );
+                Route::post( '/delete', 'AnswersController@delete' );
             });
         });
 });
