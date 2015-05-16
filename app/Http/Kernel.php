@@ -31,7 +31,10 @@ class Kernel extends HttpKernel {
         'userExists' => 'App\Http\Middleware\UserExists',
         'groupExists' => 'App\Http\Middleware\GroupExists',
         'questionExists' => 'App\Http\Middleware\QuestionExists',
-        'userCanSeeQuestion' => 'App\Http\Middleware\UserCanSeeQuestion'
+        'userCanSeeQuestion' => 'App\Http\Middleware\UserCanSeeQuestion',
+        'answerExists' => 'App\Http\Middleware\AnswerExists',
+        'userIsAnswerAuthor' => 'App\Http\Middleware\UserIsAnswerAuthor',
+        'onlyGroupCreator' => 'App\Http\Middleware\OnlyGroupCreator'
 	];
 
 }

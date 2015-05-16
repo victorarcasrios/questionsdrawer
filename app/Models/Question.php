@@ -22,6 +22,11 @@ class Question extends Model{
 		return $this->hasMany('App\Models\Answer', 'question_id');
 	}
 
+	public function bestAnswer()
+	{
+		return $this->hasOne('App\Models\Answer', 'id', 'best_answer_id');
+	}
+
 	/**
 		Other getters
 	*/

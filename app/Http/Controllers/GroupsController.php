@@ -17,17 +17,17 @@ class GroupsController extends Controller{
 	/**
 		VIEW
 	**/
-	public function get($id){
-		$group = Group::find($id);
+	// public function get($id){
+	// 	$group = Group::find($id);
 		
-		return json_encode([ 
-			'success' => 1,
-			'group_id' => $group->id,
-			'group_name' => $group->name,
-			'creator_id' => $group->creator->id,
-			'creator_name' => $group->creator->name
-			]);
-	}
+	// 	return json_encode([ 
+	// 		'success' => 1,
+	// 		'group_id' => $group->id,
+	// 		'group_name' => $group->name,
+	// 		'creator_id' => $group->creator->id,
+	// 		'creator_name' => $group->creator->name
+	// 		]);
+	// }
 
 	// // NOT USED BY THE APP. PLEASE BE CAREFUL, NOT TESTED
 	// public function getAll(){
@@ -51,6 +51,11 @@ class GroupsController extends Controller{
 	/**
 		SEARCHES
 	**/
+
+	/**
+	 * Search groups with the given data (member role and status, words in title)
+	 * @return json array [status, groups]
+	 */
 	public function search(){
 		$user =  User::find( Input::get('user_id') );
 		$role = Input::get('role_name');
@@ -71,6 +76,12 @@ class GroupsController extends Controller{
 			'status' => env('STATUS_OK'), 'groups' => $this->executeSearch($groups, $names)->get()]);
 	}
 
+	/**
+	 * Search the given words in the titles of the given groups
+	 * @param array of Group objects $groups where to search
+	 * @param string array $names words to search in the groups titles
+	 * @return array of Group objects (found)
+	 */
 	private function executeSearch($groups, $names){
 		if(!$groups)
 			$groups = Group::select('groups.id', 'groups.name')->where('groups.name', 'LIKE', "%{$names[0]}%");
@@ -83,7 +94,14 @@ class GroupsController extends Controller{
 		return $groups;
 	}
 
-	private function getGroupsToSearch($user, $role, $status){
+	/**
+	 * Return the groups with the indicated criteria
+	 * @param User $user that makes the search
+	 * @param string $role member role
+	 * @param string $status member status
+	 * @return array of Group objects (found)
+	 */
+	private function getGroupsToSearch(User $user, $role, $status){
 		switch($role){			
 			case null:
 				return false;
@@ -96,6 +114,12 @@ class GroupsController extends Controller{
 		}
 	}
 
+	/**
+	 * Checks if the given query result is empty, if it is,
+	 * return all groups, if not, returns the array
+	 * @param Eloquent query select in groups table
+	 * @return array of Group objects
+	 */
 	private function returnCurrentGroupsOrAllIfAny($groups){
 		if(!$groups)
 			return Group::select('groups.id', 'groups.name')->get();
@@ -105,8 +129,13 @@ class GroupsController extends Controller{
 
 
 	/**
-		CREATION
+		CREATION, EDITION and DELETION
 	*/
+
+	/**
+	 * Do some checks and calls createIt() if the given data pass them properly
+	 * @return [status, [exception/group_id]]
+	 */
 	public function create(){
 		$groupName = Input::get('group_name');
 		$user = User::find(Input::get('user_id'));
@@ -121,6 +150,11 @@ class GroupsController extends Controller{
 		return $this->createIt($groupName, $user);
 	}
 
+	/**
+	 * Checks that the given name is a valid group name, if NOT return TRUE, else FALSE
+	 * @param string $name
+	 * @return boolean TRUE if is NOT valid, FALSE either
+	 */
 	private function isValidGroupData($name){
 		$validator = Validator::make(
 				array('name' => $name),
@@ -129,12 +163,23 @@ class GroupsController extends Controller{
 		return !$validator->fails();
 	}
 
-	private function createIt($name, $creator){
+	/**
+	 * Creates a new group with the given data
+	 * @param string $name title for the group
+	 * @param User $creator of the group
+	 * @return json array [status, group_id]
+	 */
+	private function createIt($name, User $creator){
 		$group = new Group(['name' => $name ]);
 		$creator->createdGroups()->save($group);
 		return json_encode([ 'status' => env('STATUS_OK'), 'group_id' => $group->id ]);		
 	}
 
+	/**
+	 * Updates the existent group with the given group id
+	 * @param integer $groupId
+	 * @return json array [status, [exception]]
+	 */
 	public function update($groupId)
 	{
 		$group = Group::find($groupId);
@@ -153,7 +198,11 @@ class GroupsController extends Controller{
 		return json_encode(['status' => env('STATUS_OK')]);
 	}
 
-
+	/**
+	 * Deletes the group with the given group id
+	 * @param integer $groupId id of the group to be deleted
+	 * @return json array [status, [exception]]
+	 */
 	public function delete($groupId){
 		$user = User::find(Input::get('user_id'));
 		$group = Group::find($groupId);

@@ -6,6 +6,7 @@ use Validator;
 use App\Models\User;
 use App\Models\Group;
 use App\Models\Question;
+use App\Models\Answer;
 /* 
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -215,5 +216,46 @@ class QuestionsController extends Controller{
         }
             
         return $questions->orderBy('updated_at', 'desc')->get();
+    }
+
+    /**
+        ANSWERS
+    **/
+
+    /**
+     * Retrieve the answer marked as best from all the answers of the question with the given id
+     * @param integer $questionId
+     * @return json [status, answer_id]
+     */
+    public function getBestAnswer($questionId)
+    {
+        $question = Question::find($questionId);
+
+        $bestAnswerId = ($question->bestAnswer) ? $question->bestAnswer->id : NULL;
+
+        return json_encode(['status' => env('STATUS_OK'), 'answer_id' => $bestAnswerId]);
+    }
+
+    /**
+     * Mark the indicated answer as the best for the question with the given question id
+     * @param integer $questionId
+     * @return json [status, [exception]]
+     */
+    public function setBestAnswer($questionId)
+    {
+        $user = User::find(Input::get('user_id'));
+        $question = Question::find($questionId);
+        $selectedAnswer = Answer::find(Input::get('answer_id'));
+        $answerNotFound = !$selectedAnswer;
+        $canNotSetIt = !$user->isQuestionAuthor($question) && !$user->isCreator($question->group);
+        
+        if($answerNotFound)
+            return json_encode(['status' => env('STATUS_KO'), 'exception' => 'AnswerNotFound']);
+        if($canNotSetIt)
+            return json_encode(['status' => env('STATUS_KO'), 'exception' => 'OnlyAuthorOrCreatorCanSetIt']);
+
+        $question->best_answer_id = $selectedAnswer->id;
+        $question->save();
+        return json_encode(['status' => env('STATUS_OK')]);
     }
 }

@@ -40,31 +40,19 @@ Route::group(['prefix' => 'api'], function(){
                 Route::get('/roles', 'UsersController@getRolesFor');
                 Route::get('/statuses', 'UsersController@getStatusesFor');
             });
-            // Route::get('/{id}/groups/created/count', 'UsersController@countOwnGroups');
-            // Route::get('/{id}/groups/', 'UsersController@getRelatedGroups');
-            // Route::get('/{id}/{membership}/groups', 'GroupsController@getAllForMember');
-        });
-
-        /**
-            INFO ROUTES (No auth required)
-        **/
-
-        Route::group(['prefix' => 'groups'], function(){
-            Route::get( '/', 'GroupsController@getAll' );
-            
-        //     Route::group( ['prefix' => '/{groupId}', 'middleware' => 'groupExists'], function(){
-        //         Route::get( '/', 'GroupsController@get');     
-        //     });            
-        // });
-
-        // Route::group(['prefix' => 'questions'], function(){
-        //     Route::get( '/', 'QuestionsController@listAll' );
+            Route::get('/{id}/groups/created/count', 'UsersController@countOwnGroups');
         });
 
         /**
             AUTH USERS ONLY ROUTES
         **/
         Route::group(['middleware' => 'loggedUser'], function(){
+
+            Route::group('memberships', function()
+            {
+                Route::post('/', 'MembersController@myMemberships');
+                Route::post('/{role}/{status}', 'MembersController@getMemberships');
+            });
 
             /**
                 GROUPS
@@ -82,7 +70,22 @@ Route::group(['prefix' => 'api'], function(){
                     Route::group(['prefix' => '/questions'], function(){
                         Route::post( '/', 'QuestionsController@create' );
                         Route::post( '/searches', 'QuestionsController@search' );
-                });     
+                    });   
+
+                    // vvv @TODO
+                    Route::group(['prefix' => '/members'], function(){
+                        Route::post( '/', 'MembersController@apply' );
+                        Route::post( '/leave', 'MembersController@leave');
+
+                        Route::group(['middleware' => 'onlyGroupCreator'], function()
+                        {
+                            Route::post('/actives', 'MembersController@active');
+                            Route::post('/bans', 'MembersController@ban');
+                            Route::post('/denials', 'MembersController@deny');
+                            Route::post('/{role}/{status}/index', 'MembersController@index');
+                        });
+                    });
+                    // ^^^ @TODO
                 });
                 
                                
@@ -102,6 +105,12 @@ Route::group(['prefix' => 'api'], function(){
                 Route::group(['prefix' => '/answers', 'middleware' => 'userCanSeeQuestion'], function(){
                    Route::post( '/', 'AnswersController@create' ); 
                    Route::post( '/list', 'AnswersController@index');
+
+                   # It best Answer
+                   Route::group(['prefix' => 'best'], function(){
+                        Route::post( '/get', 'QuestionsController@getBestAnswer');
+                        Route::post( '/set', 'QuestionsController@setBestAnswer');
+                   });
                 });
             });
 
@@ -111,10 +120,30 @@ Route::group(['prefix' => 'api'], function(){
 
             # Just Answers
             Route::group(['prefix' => 'answers/{answerId}', 'middleware' => 'answerExists'], function(){
-                Route::put( '/', 'AnswersController@update' );
-                Route::post( '/delete', 'AnswersController@delete' );
+                Route::group(['middleware' => 'userIsAnswerAuthor'], function(){
+                    Route::put( '/', 'AnswersController@update' );
+                    Route::post( '/delete', 'AnswersController@delete' );
+                });
+
+                # Its Votes
+                Route::group(['prefix' => '/votes'], function(){
+                    Route::post( '/set', 'VotesController@set');
+                    Route::post( '/report', 'VotesController@getReport');
+                });
             });
         });
+
+        /**
+            NOTIFICATIONS
+        **/
+
+        // vvv @TODO
+        // Route::group(['prefix' => '/notifications'], function()
+        // {
+        //     Route::post('/report', 'UserController@getNotificationsReport');
+        //     Route::post('/index', 'UsersController@getNotifications');
+        // });
+        // ^^^ @TODO
 });
 
 

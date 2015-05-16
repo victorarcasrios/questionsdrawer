@@ -24,14 +24,6 @@ class UsersController extends Controller{
     //     return User::find($id);
     // }
 
-    // public function getRelatedGroups($userId){
-    //     $user = User::find($userId);
-    //     $asMember = json_decode($user->groups);
-    //     $asCreator = json_decode($user->createdGroups);
-    //     $relatedGroups = array_merge($asMember, $asCreator);
-    //     return json_encode(['success' => 1, 'groups' => $relatedGroups]);
-    // }
-
     /**
      * Returns user roles
      * @param integet $id of specific user
@@ -84,20 +76,22 @@ class UsersController extends Controller{
         return $statusesArray;   
     }
 
-    // /**
-    //  * Returns recount of groups created by user
-    //  * @return JSON (int success, int count, int max_allowed)
-    //  */ 
-    // public function countOwnGroups($id){
-    //     $user = User::find($id);
-    //     if( !$user ) return json_encode(array( 'success' => 0, 'exception' => 'UserNotFound' ));
+    /**
+     * Returns recount of groups created by user
+     * @param integer $id of the user
+     * @return json array [status, [exception/(count, max_allowed)]]
+     */ 
+    public function countOwnGroups($id){
+        $user = User::find($id);
+        if( !$user ) 
+            return json_encode(array( 'status' => env('STATUS_KO'), 'exception' => 'UserNotFound' ));
 
-    //     return json_encode([
-    //         "success" => 1,
-    //         "count" => $user->createdGroups()->count(), 
-    //         "max_allowed" => intval(env("MAX_GROUPS_CREATED_BY_USER"))
-    //     ]);
-    // }
+        return json_encode([
+            "status" => env('STATUS_OK'),
+            "count" => $user->createdGroups()->count(), 
+            "max_allowed" => intval(env("MAX_GROUPS_CREATED_BY_USER"))
+        ]);
+    }
     
     /** 
      * Checks if user is logged

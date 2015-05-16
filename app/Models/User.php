@@ -40,6 +40,11 @@ class User extends Model{
     public function answers(){
         return $this->hasMany('App\Models\Answer', 'author_id');
     }
+
+    public function votes()
+    {
+        return $this->hasMany('App\Models\Vote', 'author_id');
+    }
     
     /**
     	Methods
@@ -80,6 +85,16 @@ class User extends Model{
     }
 
     /**
+     * Returns TRUE if the given answer was posted by this user, else FALSE
+     * @param Answer $answer
+     * @return boolean TRUE if this is the author of the answers, FALSE if not
+     */
+    public function isAnswerAuthor(Answer $answer)
+    {
+        return $answer->author_id === $this->id;
+    }
+
+    /**
      * Return a query that selects all groups where this user have the given role and status as member
      * @param string $role [Teacher, Student]
      * @param string $status [Active, Demanded, Denied, Banned]
@@ -111,6 +126,17 @@ class User extends Model{
     public function answerFor(Question $question){
         return Answer::where('author_id', '=', $this->id)
                         ->where('question_id', '=', $question->id);
+    }
+
+    /**
+     * Returns true if exists a vote of this user for the given answer
+     * @param Answer $answer
+     * @return boolean TRUE if user has voted, FALSE if not
+     */
+    public function hasVoted(Answer $answer){
+        return Vote::where('author_id', '=', $this->id)
+                        ->where('answer_id', '=', $answer->id)
+                        ->exists();
     }
 
 }

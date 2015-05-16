@@ -84,4 +84,27 @@ class AnswersController extends Controller{
 		]);
 	}
 
+	public function update($answerId)
+	{
+		$user = User::find(Input::get('user_id'));
+		$answer = Answer::find($answerId);
+		$text = Input::get('answer_text');
+
+		if($this->isNotValidAnswerText($text))
+			return json_encode(['status' => env('STATUS_KO'), 'exception' => 'InvalidAnswerText']);
+
+		$answer->text = $text;
+		$answer->save();
+		return json_encode(['status' => env('STATUS_OK')]);
+	}
+
+	public function delete($answerId)
+	{
+		$user = User::find(Input::get('user_id'));
+		$answer = Answer::find($answerId);
+
+		$answer->delete();
+		return json_encode(['status' => env('STATUS_OK')]);
+	}
+
 }
