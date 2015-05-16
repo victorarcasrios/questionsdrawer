@@ -32,7 +32,10 @@ class SearchQuestionTest extends TestCase {
 
 		$this->assertArrayHasKey('status', $responseData);
 		$this->assertEquals($responseData['status'], $expectedResponse['status']);
-		$this->assertEquals($expectedResponse['questions'], $responseData['questions'], "\$canonicalize = true");
+		$this->assertEquals(
+			json_encode(sort($expectedResponse['questions'])), 
+			json_encode(sort($responseData['questions']))
+		);
 	}
 
 	/**
@@ -61,7 +64,10 @@ class SearchQuestionTest extends TestCase {
 
 		$this->assertArrayHasKey('status', $responseData);
 		$this->assertEquals($responseData['status'], $expectedResponse['status']);
-		$this->assertEquals($expectedResponse['questions'], $responseData['questions'], "\$canonicalize = true");
+		$this->assertEquals(
+			json_encode(sort($expectedResponse['questions'])), 
+			json_encode(sort($responseData['questions']))
+		);
 	}
 
 	/*
