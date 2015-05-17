@@ -173,6 +173,9 @@ class QuestionsController extends Controller{
                 $answeredQuestions = $this->getAnsweredQuestions($user, $group);
                 $questions = $this->getNotAnsweredQuestions($group, $answeredQuestions);
                 break;
+            case env('CREATED_QUESTIONS'):
+                $questions = $user->questions;
+                break;
         }
         return $questions->select('id', 'text');
     }

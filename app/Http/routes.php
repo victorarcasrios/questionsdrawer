@@ -48,6 +48,10 @@ Route::group(['prefix' => 'api'], function(){
         **/
         Route::group(['middleware' => 'loggedUser'], function(){
 
+            /**
+                MEMBERSHIPS
+            **/
+
             Route::group(['prefix' => 'memberships'], function()
             {
                 Route::post('/active', 'MembersController@getActiveMemberships');
@@ -72,7 +76,7 @@ Route::group(['prefix' => 'api'], function(){
                         Route::post( '/searches', 'QuestionsController@search' );
                     });   
 
-                    // vvv @TOTEST
+                    # Its members
                     Route::group(['prefix' => '/members'], function(){
                         Route::post( '/', 'MembersController@apply' );
                         Route::post( '/leave', 'MembersController@leave');
@@ -86,7 +90,6 @@ Route::group(['prefix' => 'api'], function(){
                             Route::post('/{role}/{status}/index', 'MembersController@index');
                         });
                     });
-                    // ^^^ @TOTEST
                 });
                 
                                
