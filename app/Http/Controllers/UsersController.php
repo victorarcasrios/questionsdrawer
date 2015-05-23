@@ -122,7 +122,7 @@ class UsersController extends Controller{
         $validator = $this->getSignupValidator( $name, $email, $password );
 
         if($validator->fails())
-            return json_encode(['status' => 0, 'exception' => 'IncorrectData', 'errors' => $validator->messages()]);
+            return json_encode(['status' => 0, 'exception' => 'IncorrectSignupData', 'errors' => $validator->messages()]);
 
         User::create([
             'name' => $name, 
