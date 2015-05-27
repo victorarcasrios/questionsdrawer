@@ -40,7 +40,7 @@ class MembersController extends Controller{
 	{
 		$user = User::find(Input::get('user_id'));
 		$memberships = $user->members()
-							->select(['groups.id', 'groups.name', 'role', 'status'])
+							->select(['groups.id', 'groups.name'])
 							->join('groups', 'groups.id', '=', 'group_id')
 							->where('role', '=', $role)
 							->where('status', '=', $status)

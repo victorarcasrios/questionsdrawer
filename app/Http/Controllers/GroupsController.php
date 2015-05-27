@@ -73,7 +73,8 @@ class GroupsController extends Controller{
 		}
 		
 		return json_encode([
-			'status' => env('STATUS_OK'), 'groups' => $this->executeSearch($groups, $names)->get()]);
+			'status' => env('STATUS_OK'), 'groups' => $this->executeSearch($groups, $names)->get()
+		]);
 	}
 
 	/**
@@ -84,13 +85,18 @@ class GroupsController extends Controller{
 	 */
 	private function executeSearch($groups, $names){
 		if(!$groups)
-			$groups = Group::select('groups.id', 'groups.name')->where('groups.name', 'LIKE', "%{$names[0]}%");
+			$groups = Group::select('groups.id', 'groups.name');
 		else
-			$groups = $groups->select('groups.id', 'groups.name')->where('groups.name', 'LIKE', "%{$names[0]}%");
+			$groups = $groups->select('groups.id', 'groups.name');
 
-		for( $i = 1; $i < sizeof($names); $i++ ){
-			$groups = $groups->orWhere('groups.name', 'LIKE', "%{$names[$i]}%");
-		}
+		$groups = $groups->where(function($query) use($names){
+			$query->where('groups.name', 'LIKE', "%{$names[0]}%");
+
+			for( $i = 1; $i < sizeof($names); $i++ ){
+				$query->where('groups.name', 'LIKE', "%{$names[$i]}%");
+			}
+		});
+		
 		return $groups;
 	}
 

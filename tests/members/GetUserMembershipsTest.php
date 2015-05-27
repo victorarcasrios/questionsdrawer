@@ -47,7 +47,7 @@ class GetUserMembershipsTest extends TestCase {
 		$response = $this->call('POST', 'api/memberships/Student/Denied', $params);
 		$resposeData = json_decode($response->getContent(), true);
 		$expectedResponse = ['status' => env('STATUS_OK'), 'memberships' => array(
-			["id" => "1", "name" => "Grupo 1", "role" => "Student", "status" => "Denied"]
+			["id" => "1", "name" => "Grupo 1"]
 		)];
 		
 		$this->assertSame($expectedResponse['status'], $resposeData['status']);

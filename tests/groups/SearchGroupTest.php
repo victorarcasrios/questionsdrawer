@@ -171,4 +171,33 @@ class SearchGroupsTest extends TestCase {
 		$this->assertEquals($responseData, $expectedResponse);
 	}
 
+	/**
+	 * Searches a text with more than a word separated by spaces
+	 * within all the groups where this user is a member with an specific role
+	 */
+	public function testOkSearchingComplexTextInGroupsWhereRole()
+	{
+		$user = User::find(1);
+
+		$params = [
+			'user_id' => $user->id,
+			'csrf_token' => $user->remember_token,
+			'role_name' => 'Teacher',
+			'status' => 'Active',
+			'search_string' => 'Grupo 2'
+		];
+
+		$response = $this->call('POST', 'api/groups/searches', $params);
+		$responseData = json_decode($response->getContent(), true);
+
+		$expectedResponse = [ 
+			'status' => env('STATUS_OK'), 
+			'groups' => array(
+				['id' => 2, 'name' => 'Grupo 2'],
+			)
+		];
+
+		$this->assertEquals($responseData, $expectedResponse);
+	}
+
 }
