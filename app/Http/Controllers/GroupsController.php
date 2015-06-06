@@ -141,8 +141,8 @@ class GroupsController extends Controller{
 		$user = User::find(Input::get('user_id'));
 		$groups = $user->groupsWithMeAsStaff();
 
-		if( $groups->exists() )
-			return json_encode(['status' => env('STATUS_OK'), 'groups' => $groups->get()]);
+		if( $groups )
+			return json_encode(['status' => env('STATUS_OK'), 'groups' => $groups]);
 
 		return json_encode(['status' => env('STATUS_KO'), 'exception' => 'UserIsNotStaffAnywhere']);
 	}

@@ -108,11 +108,14 @@ class User extends Model{
 
     /**
      * Return all the groups where the current user as creator or active teacher
-     * @return array of Group objects
+     * @return a select query to retrieve array of Group objects
      */
     public function groupsWithMeAsStaff()
     {
-        return $this->getGroupsAs('Teacher', 'Active')->orWhere('creator_id', '=', $this->id);
+        return $this->getGroupsAs('Teacher', 'Active')
+                    ->orWhere('creator_id', '=', 'user_id')
+                    ->select('groups.id', 'groups.name')->distinct()
+                    ->get();
     }
 
     /**
