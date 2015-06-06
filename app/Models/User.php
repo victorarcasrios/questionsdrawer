@@ -107,6 +107,15 @@ class User extends Model{
     }
 
     /**
+     * Return all the groups where the current user as creator or active teacher
+     * @return array of Group objects
+     */
+    public function groupsWithMeAsStaff()
+    {
+        return $this->getGroupsAs('Teacher', 'Active')->orWhere('creator_id', '=', $this->id);
+    }
+
+    /**
      * Returns TRUE if the number of groups created by the user is under the limit, 
      * FALSE if is equal or higher
      * @return TRUE if can create more, FALSE if not

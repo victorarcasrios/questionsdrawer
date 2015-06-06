@@ -133,6 +133,20 @@ class GroupsController extends Controller{
 			return $groups->select('groups.id', 'groups.name')->get();
 	}
 
+	/**
+	 * Returns all the groups where the current user is the creator or an active teacher
+	 * @return [status, groups]
+	 */
+	public function getOnesWithMeAsStaffPerson(){
+		$user = User::find(Input::get('user_id'));
+		$groups = $user->groupsWithMeAsStaff();
+
+		if( $groups->exists() )
+			return json_encode(['status' => env('STATUS_OK'), 'groups' => $groups->get()]);
+
+		return json_encode(['status' => env('STATUS_KO'), 'exception' => 'UserIsNotStaffAnywhere']);
+	}
+
 
 	/**
 		CREATION, EDITION and DELETION

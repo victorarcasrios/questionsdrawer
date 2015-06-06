@@ -64,6 +64,7 @@ Route::group(['prefix' => 'api'], function(){
             Route::group(['prefix' => 'groups'], function(){
                 Route::post( '/searches', 'GroupsController@search' );
                 Route::post( '/', 'GroupsController@create' );
+                Route::post( '/staff', 'GroupsController@getOnesWithMeAsStaffPerson');
 
                 # A Group
                 Route::group(['prefix' => '/{groupId}', 'middleware' => 'groupExists'], function(){
