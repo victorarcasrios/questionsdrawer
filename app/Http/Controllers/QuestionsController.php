@@ -149,7 +149,7 @@ class QuestionsController extends Controller{
             return json_encode(['status' => env('STATUS_OK'), 'questions' => $questions]);
         }
 
-        $questions = $this->searchQuestions($questions, $searchString);
+        $questions = $this->searchQuestions($questions, $searchString)->get();
         return json_encode(['status' => env('STATUS_OK'), 'questions' => $questions]);
     }
 
@@ -174,7 +174,7 @@ class QuestionsController extends Controller{
                 $questions = $this->getNotAnsweredQuestions($group, $answeredQuestions);
                 break;
             case env('CREATED_QUESTIONS'):
-                $questions = $user->questions;
+                $questions = $group->questions()->where('author_id', '=', $user->id);
                 break;
         }
         return $questions->select('id', 'text');
@@ -213,12 +213,16 @@ class QuestionsController extends Controller{
      */
     private function searchQuestions($questions, $searchString){
         $words = explode(' ', $searchString);
-        $questions = $questions->where('text', 'LIKE', "%{$words[0]}%");
-        for ($i = 1; $i < sizeof($words); $i++) {
-           $questions = $questions->orWhere('text', 'LIKE', "%{$words[$i]}%"); 
-        }
-            
-        return $questions->orderBy('updated_at', 'desc')->get();
+        
+        $questions = $questions->where(function($query) use($words){
+            $query->where('text', 'LIKE', "%{$words[0]}%");
+
+            for ($i = 1; $i < sizeof($words); $i++) {
+               $query->where('text', 'LIKE', "%{$words[$i]}%"); 
+            }    
+        });
+        
+        return $questions;
     }
 
     /**

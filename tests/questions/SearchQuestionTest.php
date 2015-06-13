@@ -5,6 +5,8 @@ use App\Models\Group;
 
 class SearchQuestionTest extends TestCase {
 
+	## TODO -> Test search within created (by current user) questions
+
 	/**
 	 * Returns all the questions of a group
 	 */
