@@ -19,6 +19,12 @@ Route::group(['prefix' => 'api'], function(){
         Route::get( '/', function(){ 
             return Redirect::route('users');             
         });
+        Route::get('roles', function(){
+            return json_encode(['status' => env('STATUS_OK'), "roles" => \App\Models\Role::lists('name')]);
+        });
+        Route::get('statuses', function(){
+            return json_encode(['status' => env('STATUS_OK'), "statuses" => \App\Models\Status::lists('name')]);
+        });
         
         /**
             USERS MANAGEMENT ROUTES

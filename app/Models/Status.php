@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Eloquent\Model;
 
-class Role extends Model{
+class Status extends Model{
     
-    protected $table = 'roles';
+    protected $table = 'member_statuses';
 }
